@@ -18,10 +18,12 @@ import java.util.regex.Pattern;
 public class GameServiceImpl implements GameService {
 
     private static final int MAX_NUMBER_CELLS = 9;
+    private static final int NUMBER_OF_COLS = 3;
     private static final char X_SYMBOL = 'X';
     private static final char O_SYMBOL = 'O';
 
-    private static int[][] winCombinations =
+    // Indexes of board state(as string) win combinations
+    private static int[][] winCombinationsIndexes =
             {{0, 1, 2},
                     {3, 4, 5},
                     {6, 7, 8},
@@ -138,9 +140,9 @@ public class GameServiceImpl implements GameService {
 
     private boolean checkWinner(char[] board, char boardSymbol) {
         for (int i = 0; i < MAX_NUMBER_CELLS - 1; i++) {
-            if (board[winCombinations[i][0]] == boardSymbol
-                    && board[winCombinations[i][1]] == boardSymbol
-                    && board[winCombinations[i][2]] == boardSymbol) {
+            if (board[winCombinationsIndexes[i][0]] == boardSymbol
+                    && board[winCombinationsIndexes[i][1]] == boardSymbol
+                    && board[winCombinationsIndexes[i][2]] == boardSymbol) {
                 return true;
             }
         }
@@ -159,37 +161,34 @@ public class GameServiceImpl implements GameService {
         }
     }
 
+    /* Server can make moves in two ways:
+        1. By checking possible win combinations like X-X, XX- etc. in rows, columns, diagonals
+        and put into free cell O symbol to block win combination for X player.
+        2. If there are no winning combination yet, O symbol will be placed randomly in free cell.
+    */
     private void serverMakeMove(Game game) {
         char[] board = game.getBoard().toCharArray();
-        int counter = 0;
-        int index = -1;
-        boolean calculated = false;
+        int appearanceCount = 0;
+        int blockWinIndex = -1;
+        boolean winMoveBlocked = false;
         for (int i = 0; i < MAX_NUMBER_CELLS - 1; i++) {
-            if (board[winCombinations[i][0]] == X_SYMBOL) {
-                counter++;
-            } else {
-                index = board[winCombinations[i][0]] == '-' ? winCombinations[i][0] : index;
+            for (int j = 0; j < NUMBER_OF_COLS; j++) {
+                if (board[winCombinationsIndexes[i][j]] == X_SYMBOL) {
+                    appearanceCount++;
+                } else {
+                    blockWinIndex = board[winCombinationsIndexes[i][j]] == '-' ? winCombinationsIndexes[i][j] : blockWinIndex;
+                }
             }
-            if (board[winCombinations[i][1]] == X_SYMBOL) {
-                counter++;
-            } else {
-                index = board[winCombinations[i][1]] == '-' ? winCombinations[i][1] : index;
-            }
-            if (board[winCombinations[i][2]] == X_SYMBOL) {
-                counter++;
-            } else {
-                index = board[winCombinations[i][2]] == '-' ? winCombinations[i][2] : index;
-            }
-            if (counter == 2 && index > -1) {
-                board[index] = O_SYMBOL;
-                calculated = true;
+            if (appearanceCount == 2 && blockWinIndex > -1) {
+                board[blockWinIndex] = O_SYMBOL;
+                winMoveBlocked = true;
                 break;
             }
-            counter = 0;
-            index = -1;
+            appearanceCount = 0;
+            blockWinIndex = -1;
         }
 
-        if (!calculated) {
+        if (!winMoveBlocked) {
             List<Integer> indexes = new ArrayList<>();
             for (int i = 0; i < board.length; i++) {
                 if (board[i] == '-') {
@@ -207,6 +206,7 @@ public class GameServiceImpl implements GameService {
         game.setBoard(new String(board));
     }
 
+    // Validation of input values
     private void checkInput(String board) {
         if (board.length() != MAX_NUMBER_CELLS) {
             throw new GameBadRequestException("Invalid number of symbols. Should be 9.");
