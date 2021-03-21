@@ -1,0 +1,116 @@
+{
+	"info": {
+		"_postman_id": "3ee7250c-3fe6-4496-aebc-96dd3c074175",
+		"name": "TicTacToe Game",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get all games",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{game_url}}/games",
+					"host": [
+						"{{game_url}}"
+					],
+					"path": [
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Start a new game",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"board\": \"XO--X--OX\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{game_url}}/games",
+					"host": [
+						"{{game_url}}"
+					],
+					"path": [
+						"games"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get a game by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{game_url}}/games/{{game_id}}",
+					"host": [
+						"{{game_url}}"
+					],
+					"path": [
+						"games",
+						"{{game_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Post a new move to a game",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"board\": \"XO--X-XOX\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{game_url}}/games/{{game_id}}",
+					"host": [
+						"{{game_url}}"
+					],
+					"path": [
+						"games",
+						"{{game_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete a game",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{game_url}}/games/{{game_id}}",
+					"host": [
+						"{{game_url}}"
+					],
+					"path": [
+						"games",
+						"{{game_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
