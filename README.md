@@ -7,6 +7,7 @@ Clone the project. Run it. It will be accessible on 2180 port.
 ```bash
 http://localhost:2180
 ```
+In tools/postman directory you can find Postman environment and collection for API ussage.
 
 ## Usage
 
