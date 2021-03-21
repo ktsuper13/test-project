@@ -1,0 +1,126 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title>Tic Tac Toe game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<script language="JavaScript">
+    var gameId;
+    var board;
+    var statuses = {
+        "X_WON": "X Player Won",
+        "O_WON": "O Player Won",
+        "DRAW": "No winners"
+    };
+
+    function restartGame() {
+        window.location.replace("http://localhost:2180");
+    };
+
+    function firstLoad() {
+        gameId = getQueryVariable("game_id");
+        var xmlHttp = new XMLHttpRequest();
+        xmlHttp.open( "GET", "http://localhost:2180/api/v1/games/" + gameId, true);
+        xmlHttp.send();
+        xmlHttp.onload = function (e) {
+            if (xmlHttp.readyState === 4) {
+                var responseObj = JSON.parse(xmlHttp.responseText);
+                board = responseObj.board;
+                if (haveWinner(responseObj.status)) {
+                    document.getElementById("game-container").style.pointerEvents = 'none';
+                }
+                fillBoard(board);
+            }
+        }
+    };
+
+    function makeMove(cellId) {
+        document.getElementById("game-container").style.pointerEvents = 'none';
+        var cellValue = document.getElementById(cellId).textContent;
+        if (cellValue === "") {
+            document.getElementById(cellId).textContent = "X";
+            var xmlHttp = new XMLHttpRequest();
+            xmlHttp.open( "PUT", "http://localhost:2180/api/v1/games/" + gameId, true);
+            xmlHttp.setRequestHeader('Content-Type', 'application/json');
+            xmlHttp.send(JSON.stringify({
+                "board": readBoard()
+            }));
+            xmlHttp.onload = function (e) {
+                if (xmlHttp.readyState === 4) {
+                    if (xmlHttp.status === 400) {
+                        var error = JSON.parse(xmlHttp.responseText);
+                        document.getElementById("error").textContent = error.message;
+                    } else {
+                        var responseObj = JSON.parse(xmlHttp.responseText);
+                        fillBoard(responseObj.board);
+                        if (!haveWinner(responseObj.status)) {
+                            document.getElementById("game-container").style.pointerEvents = 'auto';
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function haveWinner(status) {
+        if (status === "X_WON"
+            || status === "O_WON"
+            || status === "DRAW") {
+               document.getElementById("game-container").style.pointerEvents = 'none';
+               document.getElementById("error").textContent = statuses[status];
+               document.getElementById("game-restart").style.visibility = 'visible';
+               return true;
+        }
+        return false;
+    }
+
+    function fillBoard(board) {
+        var boardChars = board.split('');
+        for (i = 0; i < boardChars.length; i++) {
+            if (boardChars[i] !== "-") {
+                document.getElementById(i).textContent = boardChars[i];
+            }
+        }
+    };
+
+    function readBoard() {
+        var boardString = "";
+        var symbol;
+        for (i = 0; i < 9; i++) {
+            symbol = document.getElementById(i).textContent;
+            boardString = boardString + (symbol === "" ? "-" : symbol);
+        }
+        return boardString;
+    }
+
+    function getQueryVariable(variable) {
+    var query = window.location.search.substring(1);
+    var vars = query.split('&');
+    for (var i = 0; i < vars.length; i++) {
+        var pair = vars[i].split('=');
+        if (decodeURIComponent(pair[0]) == variable) {
+            return decodeURIComponent(pair[1]);
+        }
+    };
+}
+</script>
+<body onload="firstLoad()">
+    <div id= "game-container" class="game-container">
+        <div id="0" class="cell" onclick="makeMove(0);"></div>
+        <div id="1" class="cell" onclick="makeMove(1);"></div>
+        <div id="2" class="cell" onclick="makeMove(2);"></div>
+        <div id="3" class="cell" onclick="makeMove(3);"></div>
+        <div id="4" class="cell" onclick="makeMove(4);"></div>
+        <div id="5" class="cell" onclick="makeMove(5);"></div>
+        <div id="6" class="cell" onclick="makeMove(6);"></div>
+        <div id="7" class="cell" onclick="makeMove(7);"></div>
+        <div id="8" class="cell" onclick="makeMove(8);"></div>
+    </div>
+    <div class="error">
+        <p id="error"></p>
+    </div>
+    <div class="game-restart-container">
+        <button id="game-restart" style="visibility:hidden"  onclick="restartGame();">Restart Game</button>
+    </div>
+</body>
+</html>
